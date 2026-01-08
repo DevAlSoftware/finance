@@ -497,3 +497,49 @@ sequenceDiagram
 4. **JWT para Autenticación:** Stateless y escalable
 5. **PostgreSQL:** Base de datos relacional robusta y open-source
 
+### Estructura de Paquetes
+
+```
+src/main/java/com/devalFinance/
+├── domain/                    # CORE - Sin dependencias externas
+│   ├── model/                # Entidades de dominio
+│   └── repository/           # Interfaces (Ports)
+│
+├── application/              # Casos de Uso
+│   ├── usecase/
+│   └── dto/
+│
+├── infrastructure/           # Adapters - Implementaciones
+│   ├── persistence/
+│   │   ├── entity/          # JPA Entities
+│   │   ├── repository/      # Spring Data Repositories
+│   │   └── adapter/         # Repository Adapters
+│   ├── security/
+│   └── config/
+│
+└── presentation/            # REST Controllers
+    ├── controller/
+    ├── mapper/
+    └── exception/
+```
+
+### Flujo de Datos
+
+1. **Request HTTP** → Controller (Presentation)
+2. **Controller** → Valida entrada, convierte DTO a Domain
+3. **Use Case** (Application) → Orquesta la lógica de negocio
+4. **Domain Service** → Ejecuta reglas de negocio
+5. **Repository Interface** (Port) → Definido en Domain
+6. **Repository Adapter** (Infrastructure) → Implementa persistencia
+7. **Database** → Almacena/recupera datos
+8. **Response** → Flujo inverso hasta retornar DTO al cliente
+
+---
+
+## Ventajas de esta Arquitectura
+
+1. **Testabilidad:** Fácil de testear cada capa independientemente
+2. **Mantenibilidad:** Código organizado y fácil de entender
+3. **Escalabilidad:** Preparado para crecer y migrar a microservicios
+4. **Flexibilidad:** Fácil cambiar implementaciones sin afectar el dominio
+5. **Clean Code:** Separación clara de responsabilidades
