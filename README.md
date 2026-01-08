@@ -616,6 +616,74 @@ frontend/
 
 ---
 
+## Configuración Inicial
+
+### Requisitos Previos
+
+- Java 21+ instalado y configurado
+- Maven 3.8+ instalado
+- PostgreSQL instalado y corriendo en puerto 5441
+- Git para control de versiones
+
+### Configuración de Base de Datos Local
+
+**Guía completa paso a paso:** Ver [docs/SETUP_BD_LOCAL.md](docs/SETUP_BD_LOCAL.md)
+
+#### Pasos Rápidos:
+
+1. **Conectar a PostgreSQL:**
+   ```bash
+   psql -U postgres
+   ```
+
+2. **Crear la base de datos:**
+   ```sql
+   CREATE DATABASE devalfinance;
+   ```
+   
+   Verificar que se creó:
+   ```sql
+   \l
+   ```
+   
+   Salir:
+   ```sql
+   \q
+   ```
+
+3. **Configurar credenciales en application.properties:**
+   
+   Asegurate de que los valores coincidan con tu PostgreSQL:
+   ```properties
+   spring.datasource.url=jdbc:postgresql://localhost:5441/devalfinance
+   spring.datasource.username=postgres
+   spring.datasource.password=1234
+   ```
+   
+   Si tu PostgreSQL usa otro puerto o contraseña, actualiza estos valores.
+
+4. **Iniciar la aplicación:**
+   ```bash
+   mvn clean spring-boot:run
+   ```
+   
+   Flyway creará automáticamente todas las tablas cuando la aplicación inicie.
+
+5. **Verificar que las tablas se crearon:**
+   ```bash
+   psql -U postgres -d devalfinance
+   \dt
+   ```
+   
+   Deberías ver las tablas: flyway_schema_history, membership_plans, users, subscriptions, accounts, transactions, categories, transaction_limits
+
+### Scripts Disponibles
+
+- `scripts/create_database.sql` - Script SQL para crear la base de datos
+- `scripts/drop_database.sql` - Script SQL para eliminar la base de datos (solo desarrollo)
+
+---
+
 ## Plan de Implementación (Fases)
 
 ### Fase 1: Fundamentos (Semanas 1-2)
