@@ -757,6 +757,29 @@ frontend/
 
 ---
 
+## Flujo de Trabajo Git
+
+Este proyecto usa **Git Flow** con las siguientes ramas:
+
+- **main:** Rama de producción (estable, solo releases)
+- **develop:** Rama de desarrollo (integración continua)
+
+Para más detalles sobre el flujo de trabajo, convenciones de commits y branching strategy, consulta:
+- [docs/GIT_WORKFLOW.md](docs/GIT_WORKFLOW.md) - Estrategia completa de Git
+- [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) - Guía de contribución
+
+### Convenciones de Commits
+
+Usamos convenciones estándar:
+- `feat:` Nueva funcionalidad
+- `fix:` Corrección de bug
+- `docs:` Documentación
+- `refactor:` Refactorización
+- `test:` Tests
+- `chore:` Mantenimiento
+
+---
+
 ## Próximos Pasos
 
 1. Completar más casos de uso de transacciones
