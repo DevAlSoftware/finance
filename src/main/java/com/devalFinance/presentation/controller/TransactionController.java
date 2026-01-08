@@ -2,11 +2,14 @@ package com.devalFinance.presentation.controller;
 
 import com.devalFinance.application.dto.request.CreateTransactionRequest;
 import com.devalFinance.application.dto.request.CreateTransferRequest;
+import com.devalFinance.application.dto.request.UpdateTransactionRequest;
 import com.devalFinance.application.dto.response.TransactionResponse;
 import com.devalFinance.application.dto.response.TransferResponse;
 import com.devalFinance.application.usecase.transaction.CreateTransactionUseCase;
 import com.devalFinance.application.usecase.transaction.CreateTransferUseCase;
+import com.devalFinance.application.usecase.transaction.DeleteTransactionUseCase;
 import com.devalFinance.application.usecase.transaction.GetTransactionsUseCase;
+import com.devalFinance.application.usecase.transaction.UpdateTransactionUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,13 +31,19 @@ public class TransactionController {
     
     private final CreateTransactionUseCase createTransactionUseCase;
     private final CreateTransferUseCase createTransferUseCase;
+    private final UpdateTransactionUseCase updateTransactionUseCase;
+    private final DeleteTransactionUseCase deleteTransactionUseCase;
     private final GetTransactionsUseCase getTransactionsUseCase;
 
     public TransactionController(CreateTransactionUseCase createTransactionUseCase,
                                 CreateTransferUseCase createTransferUseCase,
+                                UpdateTransactionUseCase updateTransactionUseCase,
+                                DeleteTransactionUseCase deleteTransactionUseCase,
                                 GetTransactionsUseCase getTransactionsUseCase) {
         this.createTransactionUseCase = createTransactionUseCase;
         this.createTransferUseCase = createTransferUseCase;
+        this.updateTransactionUseCase = updateTransactionUseCase;
+        this.deleteTransactionUseCase = deleteTransactionUseCase;
         this.getTransactionsUseCase = getTransactionsUseCase;
     }
 
@@ -54,6 +63,25 @@ public class TransactionController {
             @CurrentUser UUID userId) {
         TransferResponse response = createTransferUseCase.execute(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PutMapping("/{transactionId}")
+    @Operation(summary = "Actualizar transacción", description = "Actualiza una transacción existente. Si cambia el monto o tipo, recalcula el saldo de la cuenta. Si cambia de cuenta, actualiza ambas cuentas")
+    public ResponseEntity<TransactionResponse> updateTransaction(
+            @PathVariable UUID transactionId,
+            @Valid @RequestBody UpdateTransactionRequest request,
+            @CurrentUser UUID userId) {
+        TransactionResponse response = updateTransactionUseCase.execute(transactionId, request, userId);
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{transactionId}")
+    @Operation(summary = "Eliminar transacción", description = "Elimina una transacción y revierte su impacto en el saldo de la cuenta")
+    public ResponseEntity<Void> deleteTransaction(
+            @PathVariable UUID transactionId,
+            @CurrentUser UUID userId) {
+        deleteTransactionUseCase.execute(transactionId, userId);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping
