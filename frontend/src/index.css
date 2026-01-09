@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    border-color: rgb(212, 194, 168);
+  }
+  
+  body {
+    background-color: rgb(250, 248, 245);
+    color: rgb(45, 26, 16);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    color: rgb(45, 26, 16);
+  }
+  
+  h1 {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+  
+  h2 {
+    font-size: 1.5rem;
+    line-height: 2rem;
+  }
+  
+  h3 {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+  }
+}
+
+@layer components {
+  .container-custom {
+    @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+  
+  .card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(109, 67, 40, 0.3), 0 2px 4px -1px rgba(109, 67, 40, 0.2);
+    border-width: 2px;
+    border-color: #d4c2a8;
+    padding: 1.5rem;
+  }
+  
+  .card-header {
+    border-bottom-width: 2px;
+    border-bottom-color: #d4c2a8;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .btn-spartan {
+    font-weight: 700;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    transform: translateY(0);
+    border-width: 2px;
+    border-style: solid;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-spartan:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+  
+  .btn-spartan:active {
+    transform: scale(0.95);
+  }
+  
+  .btn-spartan::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .btn-spartan:hover::before {
+    left: 100%;
+  }
+  
+  .btn-spartan-primary {
+    background: linear-gradient(to bottom, #991b1b, #7f1d1d);
+    color: white;
+    border-color: #6b1d1d;
+    box-shadow: 0 10px 15px -3px rgba(107, 29, 29, 0.5);
+  }
+  
+  .btn-spartan-primary:hover {
+    background: linear-gradient(to bottom, #b91c1c, #991b1b);
+  }
+  
+  .btn-spartan-secondary {
+    background: linear-gradient(to bottom, #d9971a, #c08014);
+    color: white;
+    border-color: #805317;
+    box-shadow: 0 10px 15px -3px rgba(107, 70, 21, 0.5);
+  }
+  
+  .btn-spartan-secondary:hover {
+    background: linear-gradient(to bottom, #e3ab4a, #d9971a);
+  }
+  
+  .btn-spartan-outline {
+    background-color: transparent;
+    color: #3d2417;
+    border-color: #6d4328;
+  }
+  
+  .btn-spartan-outline:hover {
+    background-color: #f5f0e8;
+    box-shadow: 0 10px 15px -3px rgba(109, 67, 40, 0.3);
+  }
+  
+  .btn-spartan-danger {
+    background: linear-gradient(to bottom, #b91c1c, #991b1b);
+    color: white;
+    border-color: #7f1d1d;
+  }
+  
+  .btn-spartan-danger:hover {
+    background: linear-gradient(to bottom, #dc2626, #b91c1c);
+  }
+}
