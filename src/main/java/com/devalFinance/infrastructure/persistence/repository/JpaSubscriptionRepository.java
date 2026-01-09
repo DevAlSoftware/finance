@@ -20,3 +20,4 @@ public interface JpaSubscriptionRepository extends JpaRepository<SubscriptionEnt
     Optional<SubscriptionEntity> findByUserIdAndStatusAndActive(@Param("userId") UUID userId, @Param("status") SubscriptionStatus status, @Param("now") LocalDateTime now);
 }
 
+

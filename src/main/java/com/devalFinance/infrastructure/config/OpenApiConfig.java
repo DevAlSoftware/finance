@@ -2,7 +2,6 @@ package com.devalFinance.infrastructure.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.Components;
 import org.springframework.context.annotation.Bean;
@@ -29,7 +28,7 @@ public class OpenApiConfig {
         OpenAPI openAPI = new OpenAPI();
         openAPI.setInfo(info);
         openAPI.setComponents(components);
-        openAPI.addSecurityItem(new SecurityRequirement().addList("Bearer Authentication"));
+        // No aplicamos seguridad global, solo en endpoints específicos
 
         return openAPI;
     }

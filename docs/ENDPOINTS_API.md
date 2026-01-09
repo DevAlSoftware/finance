@@ -1,21 +1,25 @@
 # Endpoints de la API - DevalFinance
 
 ## URL Base
+
 ```
 http://localhost:8888/api
 ```
 
----
+## Autenticación
 
-## 🔐 Autenticación
+### POST /auth/register
+Registrar un nuevo usuario en el sistema
 
-### 1. Registrar Usuario
-**POST** `/auth/register`
+**Headers:**
+```
+Content-Type: application/json
+```
 
 **Body:**
 ```json
 {
-  "email": "test@ejemplo.com",
+  "email": "usuario@ejemplo.com",
   "password": "Password123",
   "confirmPassword": "Password123",
   "firstName": "Juan",
@@ -23,69 +27,149 @@ http://localhost:8888/api
 }
 ```
 
-**Response (201):**
+**Response (201 Created):**
 ```json
 {
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "refreshToken": "...",
+  "accessToken": "eyJhbGciOiJIUzM4NCJ9...",
+  "refreshToken": "eyJhbGciOiJIUzM4NCJ9...",
   "tokenType": "Bearer",
-  "expiresIn": 86400000,
-  "user": { ... }
+  "expiresIn": 86400,
+  "user": {
+    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "email": "usuario@ejemplo.com",
+    "firstName": "Juan",
+    "lastName": "Pérez",
+    "fullName": "Juan Pérez",
+    "membershipPlanId": "...",
+    "createdAt": "2024-01-08T10:00:00",
+    "active": true
+  }
 }
 ```
 
 ---
 
-### 2. Iniciar Sesión
-**POST** `/auth/login`
+### POST /auth/login
+Iniciar sesión con credenciales existentes
+
+**Headers:**
+```
+Content-Type: application/json
+```
 
 **Body:**
 ```json
 {
-  "email": "test@ejemplo.com",
+  "email": "usuario@ejemplo.com",
   "password": "Password123"
 }
 ```
 
-**Response (200):** Similar al registro
+**Response (200 OK):** Similar al registro, incluye tokens JWT
 
 ---
 
-## 💰 Cuentas (Requiere Token)
+## Cuentas (Requiere Token)
 
-### 3. Crear Cuenta
-**POST** `/accounts`
-**Headers:** `Authorization: Bearer {token}`
+Todos los endpoints de cuentas requieren el header de autorización:
+```
+Authorization: Bearer {accessToken}
+```
+
+### POST /accounts
+Crear una nueva cuenta bancaria
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer {token}
+```
 
 **Body:**
 ```json
 {
-  "name": "Cuenta de Ahorros",
+  "name": "Cuenta de Ahorros Principal",
   "accountType": "SAVINGS",
   "initialBalance": 100000.00,
   "currency": "COP"
 }
 ```
 
-**Tipos:** `SAVINGS`, `CHECKING`, `CASH`
+**Tipos válidos de cuenta:**
+- SAVINGS - Cuenta de ahorros
+- CHECKING - Cuenta corriente
+- CASH - Efectivo
+
+**Response (201 Created):**
+```json
+{
+  "id": "660e8400-e29b-41d4-a716-446655440001",
+  "userId": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "Cuenta de Ahorros Principal",
+  "accountType": "SAVINGS",
+  "initialBalance": 100000.00,
+  "currentBalance": 100000.00,
+  "currency": "COP",
+  "createdAt": "2024-01-08T10:00:00",
+  "active": true
+}
+```
 
 ---
 
-### 4. Listar Cuentas
-**GET** `/accounts`
-**Headers:** `Authorization: Bearer {token}`
+### GET /accounts
+Listar todas las cuentas del usuario autenticado
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": "660e8400-e29b-41d4-a716-446655440001",
+    "userId": "550e8400-e29b-41d4-a716-446655440000",
+    "name": "Cuenta de Ahorros Principal",
+    "accountType": "SAVINGS",
+    "currentBalance": 100000.00,
+    "currency": "COP",
+    ...
+  }
+]
+```
 
 ---
 
-### 5. Obtener Cuenta por ID
-**GET** `/accounts/{accountId}`
-**Headers:** `Authorization: Bearer {token}`
+### GET /accounts/{accountId}
+Obtener una cuenta específica por ID
+
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Path Parameters:**
+- accountId: UUID de la cuenta
+
+**Response (200 OK):** Objeto AccountResponse individual
+
+**Error (404 Not Found):** Si la cuenta no existe o no pertenece al usuario
 
 ---
 
-### 6. Actualizar Cuenta
-**PUT** `/accounts/{accountId}`
-**Headers:** `Authorization: Bearer {token}`
+### PUT /accounts/{accountId}
+Actualizar una cuenta existente
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+**Path Parameters:**
+- accountId: UUID de la cuenta
 
 **Body:**
 ```json
@@ -96,19 +180,42 @@ http://localhost:8888/api
 }
 ```
 
----
+Todos los campos del body son opcionales. Solo se actualizan los campos proporcionados.
 
-### 7. Eliminar Cuenta
-**DELETE** `/accounts/{accountId}`
-**Headers:** `Authorization: Bearer {token}`
+**Response (200 OK):** AccountResponse actualizado
 
 ---
 
-## 💳 Transacciones (Requiere Token)
+### DELETE /accounts/{accountId}
+Eliminar una cuenta y todas sus transacciones asociadas
 
-### 8. Crear Transacción
-**POST** `/transactions`
-**Headers:** `Authorization: Bearer {token}`
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Path Parameters:**
+- accountId: UUID de la cuenta
+
+**Response (204 No Content):** Sin body
+
+---
+
+## Transacciones (Requiere Token)
+
+Todos los endpoints de transacciones requieren el header de autorización:
+```
+Authorization: Bearer {accessToken}
+```
+
+### POST /transactions
+Crear una nueva transacción (ingreso o gasto)
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer {token}
+```
 
 **Body:**
 ```json
@@ -122,24 +229,115 @@ http://localhost:8888/api
 }
 ```
 
-**Tipos:** `INCOME`, `EXPENSE`
+**Tipos válidos de transacción:**
+- INCOME - Ingreso (incrementa el saldo)
+- EXPENSE - Gasto (decrementa el saldo)
+
+**Validaciones:**
+- El monto debe ser mayor a 0
+- La cuenta debe existir y pertenecer al usuario
+- Si es EXPENSE, el saldo debe ser suficiente
+- No debe exceder el límite mensual de transacciones según el plan
+
+**Response (201 Created):**
+```json
+{
+  "id": "770e8400-e29b-41d4-a716-446655440002",
+  "accountId": "660e8400-e29b-41d4-a716-446655440001",
+  "userId": "550e8400-e29b-41d4-a716-446655440000",
+  "amount": 50000.00,
+  "transactionType": "EXPENSE",
+  "description": "Compra en supermercado",
+  "transactionDate": "2024-01-08",
+  "categoryId": null,
+  "tags": ["supermercado", "compras"],
+  "createdAt": "2024-01-08T10:00:00",
+  "updatedAt": "2024-01-08T10:00:00"
+}
+```
+
+**Nota:** El saldo de la cuenta se actualiza automáticamente después de crear la transacción.
 
 ---
 
-### 9. Listar Transacciones
-**GET** `/transactions?startDate=2024-01-01&endDate=2024-01-31`
-**Headers:** `Authorization: Bearer {token}`
+### GET /transactions
+Listar todas las transacciones del usuario autenticado
 
-**Query params (opcionales):**
-- `startDate` - YYYY-MM-DD
-- `endDate` - YYYY-MM-DD
+**Headers:**
+```
+Authorization: Bearer {token}
+```
+
+**Query Parameters (opcionales):**
+- startDate: Fecha de inicio (formato: YYYY-MM-DD)
+- endDate: Fecha de fin (formato: YYYY-MM-DD)
+
+**Ejemplo:**
+```
+GET /api/transactions?startDate=2024-01-01&endDate=2024-01-31
+```
+
+**Response (200 OK):**
+```json
+[
+  {
+    "id": "770e8400-e29b-41d4-a716-446655440002",
+    "accountId": "660e8400-e29b-41d4-a716-446655440001",
+    "amount": 50000.00,
+    "transactionType": "EXPENSE",
+    "description": "Compra en supermercado",
+    "transactionDate": "2024-01-08",
+    "tags": ["supermercado", "compras"],
+    ...
+  }
+]
+```
+
+Las transacciones se retornan ordenadas por fecha descendente (más recientes primero).
 
 ---
 
-## 📝 Notas
+## Códigos de Estado HTTP
 
-- Todos los endpoints de autenticación son públicos
+- 200 OK: Operación exitosa (GET, PUT)
+- 201 Created: Recurso creado exitosamente (POST)
+- 204 No Content: Operación exitosa sin contenido (DELETE)
+- 400 Bad Request: Error de validación en los datos enviados
+- 401 Unauthorized: Token de autenticación requerido o inválido
+- 404 Not Found: Recurso no encontrado o no pertenece al usuario
+- 500 Internal Server Error: Error interno del servidor
+
+---
+
+## Notas Importantes
+
+- Todos los endpoints de autenticación son públicos (no requieren token)
 - Los demás endpoints requieren el header `Authorization: Bearer {token}`
 - El token tiene validez de 24 horas
-- Usa Postman para probar todos los endpoints
+- Los UUIDs se generan automáticamente por el sistema
+- Las fechas deben estar en formato ISO (YYYY-MM-DD o YYYY-MM-DDTHH:mm:ss)
+- Los montos son BigDecimal con precisión de 2 decimales
+- Todas las validaciones se realizan automáticamente con Jakarta Validation
+
+---
+
+## Límites por Plan de Membresía
+
+### Plan FREE
+- Máximo 1 cuenta
+- Máximo 50 transacciones por mes
+
+### Plan PREMIUM
+- Máximo 10 cuentas
+- Máximo 500 transacciones por mes
+- Categorización automática
+- Categorías personalizadas
+
+### Plan BUSINESS
+- Cuentas ilimitadas
+- Transacciones ilimitadas
+- Todas las funcionalidades del plan PREMIUM
+- Múltiples usuarios
+- Acceso a API
+
 

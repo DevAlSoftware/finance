@@ -13,3 +13,4 @@ public interface JpaMembershipPlanRepository extends JpaRepository<MembershipPla
     Optional<MembershipPlanEntity> findByPlanType(PlanType planType);
 }
 
+

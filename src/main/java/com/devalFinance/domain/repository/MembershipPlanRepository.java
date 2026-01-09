@@ -12,3 +12,4 @@ public interface MembershipPlanRepository {
     Optional<MembershipPlan> findByPlanType(PlanType planType);
 }
 
+

@@ -6,3 +6,4 @@ VALUES
     ('PREMIUM', NULL, NULL, true, true, true, NULL, true, true, false, false),
     ('BUSINESS', NULL, NULL, true, true, true, NULL, true, true, true, true);
 
+

@@ -12,3 +12,4 @@ public interface JpaTransactionLimitRepository extends JpaRepository<Transaction
     Optional<TransactionLimitEntity> findByUserIdAndYearAndMonth(UUID userId, Integer year, Integer month);
 }
 
+

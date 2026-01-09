@@ -5,6 +5,8 @@ import com.devalFinance.application.dto.request.RegisterUserRequest;
 import com.devalFinance.application.dto.response.AuthResponse;
 import com.devalFinance.application.usecase.user.AuthenticateUserUseCase;
 import com.devalFinance.application.usecase.user.RegisterUserUseCase;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "Autenticación", description = "API para registro e inicio de sesión de usuarios")
 public class AuthController {
     
     private final RegisterUserUseCase registerUserUseCase;
@@ -27,12 +30,14 @@ public class AuthController {
     }
 
     @PostMapping("/register")
+    @Operation(summary = "Registrar usuario", description = "Registra un nuevo usuario en el sistema y retorna un token JWT")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterUserRequest request) {
         AuthResponse response = registerUserUseCase.execute(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")
+    @Operation(summary = "Iniciar sesión", description = "Autentica un usuario existente y retorna un token JWT")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authenticateUserUseCase.execute(request);
         return ResponseEntity.ok(response);

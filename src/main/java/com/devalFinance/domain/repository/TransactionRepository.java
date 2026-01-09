@@ -19,3 +19,4 @@ public interface TransactionRepository {
     boolean existsByIdAndUserId(UUID id, UUID userId);
 }
 
+

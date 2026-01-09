@@ -1,309 +1,338 @@
-# Arquitectura de la Capa Application - DevalFinance
+# Arquitectura de la Capa de Aplicación - DevalFinance
 
-## Propósito de la Capa Application
+## Propósito de la Capa de Aplicación
 
-La capa Application (también conocida como capa de Casos de Uso) es el orquestador entre la capa de Presentación y el Dominio. Su responsabilidad principal es:
+La capa de aplicación actúa como orquestador entre la presentación (controllers) y el dominio (entidades y repositorios). Contiene la lógica de aplicación, coordina los casos de uso y define los DTOs para la comunicación entre capas.
 
-1. **Orquestar casos de uso:** Coordinar las operaciones entre múltiples repositorios y servicios
-2. **Transformar DTOs:** Convertir entre objetos de dominio y DTOs para comunicación externa
-3. **Validar reglas de aplicación:** Validaciones que no pertenecen al dominio pero sí a la aplicación
-4. **Gestionar transacciones:** Controlar el ámbito transaccional de las operaciones
+---
 
-## Estructura de la Capa Application
+## Estructura de Directorios
 
 ```
 application/
-├── usecase/                    # Casos de uso organizados por dominio
-│   ├── user/
-│   │   ├── RegisterUserUseCase.java
-│   │   ├── AuthenticateUserUseCase.java
-│   │   └── GenerateTokenUseCase.java
-│   ├── account/
-│   │   └── CreateAccountUseCase.java
-│   ├── transaction/
-│   ├── membership/
-│   └── report/
-│
-└── dto/                        # Data Transfer Objects
-    ├── request/               # DTOs de entrada
-    │   ├── RegisterUserRequest.java
-    │   ├── LoginRequest.java
-    │   └── CreateAccountRequest.java
-    └── response/              # DTOs de salida
-        ├── UserResponse.java
-        ├── AuthResponse.java
-        └── AccountResponse.java
+├── dto/
+│   ├── request/
+│   │   ├── CreateAccountRequest.java
+│   │   ├── CreateTransactionRequest.java
+│   │   ├── LoginRequest.java
+│   │   ├── RegisterUserRequest.java
+│   │   └── UpdateAccountRequest.java
+│   └── response/
+│       ├── AccountResponse.java
+│       ├── AuthResponse.java
+│       ├── TransactionResponse.java
+│       └── UserResponse.java
+└── usecase/
+    ├── account/
+    │   ├── CreateAccountUseCase.java
+    │   ├── DeleteAccountUseCase.java
+    │   ├── GetAccountByIdUseCase.java
+    │   ├── GetAccountsUseCase.java
+    │   └── UpdateAccountUseCase.java
+    ├── transaction/
+    │   ├── CreateTransactionUseCase.java
+    │   ├── GetTransactionsUseCase.java
+    │   └── ValidateTransactionLimitUseCase.java
+    └── user/
+        ├── AuthenticateUserUseCase.java
+        ├── GenerateTokenUseCase.java
+        ├── RegisterUserUseCase.java
+        └── ValidatePasswordStrengthUseCase.java
 ```
 
-## Principios de la Capa Application
-
-### 1. Un Caso de Uso = Una Responsabilidad
-
-Cada caso de uso tiene una única responsabilidad clara:
-
-```java
-@Component
-public class RegisterUserUseCase {
-    // Solo se encarga de registrar usuarios
-    public AuthResponse execute(RegisterUserRequest request) { ... }
-}
-```
-
-### 2. DTOs para Comunicación Externa
-
-Los casos de uso trabajan con DTOs, no con entidades de dominio directamente en la interfaz:
-
-```java
-// ✅ CORRECTO: Usa DTOs
-public AuthResponse execute(RegisterUserRequest request)
-
-// ❌ INCORRECTO: Expone entidades de dominio
-public User execute(User user)
-```
-
-### 3. Transacciones en la Capa Application
-
-Las transacciones se gestionan en los casos de uso:
-
-```java
-@Transactional
-public AccountResponse execute(CreateAccountRequest request, UUID userId) {
-    // Operaciones atómicas
-}
-```
-
-### 4. Validaciones de Aplicación
-
-Validaciones que no son reglas de negocio pero sí de aplicación:
-
-```java
-private void validateAccountLimit(UUID userId) {
-    // Valida límites según plan de membresía
-    // Esto es lógica de aplicación, no de dominio
-}
-```
-
-## Flujo Completo: Registro de Usuario
-
-```
-1. Controller recibe RegisterUserRequest (DTO)
-   ↓
-2. Controller llama: registerUserUseCase.execute(request)
-   ↓
-3. RegisterUserUseCase:
-   - Valida request (contraseñas coinciden, etc.)
-   - Verifica que email no exista
-   - Crea User (domain)
-   - Guarda User usando UserRepository (domain port)
-   - Crea Subscription con plan FREE
-   - Genera tokens usando GenerateTokenUseCase
-   ↓
-4. Retorna AuthResponse (DTO)
-   ↓
-5. Controller retorna respuesta HTTP
-```
-
-## Casos de Uso Implementados
-
-### 1. RegisterUserUseCase
-
-**Responsabilidad:** Registrar un nuevo usuario en el sistema
-
-**Flujo:**
-1. Valida que las contraseñas coincidan
-2. Verifica que el email no exista
-3. Crea usuario con contraseña hasheada
-4. Asigna plan FREE automáticamente
-5. Crea suscripción activa
-6. Genera tokens JWT
-7. Retorna AuthResponse
-
-**Dependencias:**
-- UserRepository (domain)
-- MembershipPlanRepository (domain)
-- SubscriptionRepository (domain)
-- PasswordEncoder (infrastructure)
-- GenerateTokenUseCase (application)
-
-### 2. AuthenticateUserUseCase
-
-**Responsabilidad:** Autenticar un usuario existente
-
-**Flujo:**
-1. Busca usuario por email
-2. Valida contraseña
-3. Verifica que usuario esté activo
-4. Genera tokens JWT
-5. Retorna AuthResponse
-
-### 3. GenerateTokenUseCase
-
-**Responsabilidad:** Generar tokens JWT para autenticación
-
-**Flujo:**
-1. Genera access token
-2. Genera refresh token
-3. Mapea User a UserResponse
-4. Retorna AuthResponse
-
-**Nota:** Usa JwtTokenProvider de infrastructure para generar tokens
-
-### 4. CreateAccountUseCase
-
-**Responsabilidad:** Crear una nueva cuenta bancaria
-
-**Flujo:**
-1. Valida que usuario exista
-2. Valida límite de cuentas según plan
-3. Crea Account (domain)
-4. Guarda Account
-5. Retorna AccountResponse
-
-## Separación de Responsabilidades
-
-### Domain vs Application
-
-**Domain (Reglas de Negocio):**
-- ¿Qué es un User válido?
-- ¿Cuáles son las reglas de negocio?
-
-**Application (Casos de Uso):**
-- ¿Cómo registro un usuario?
-- ¿Qué pasos debo seguir?
-- ¿Qué validaciones de aplicación aplico?
-
-### Ejemplo de Separación
-
-```java
-// DOMAIN: Regla de negocio
-public class User {
-    public boolean isActive() {
-        return Boolean.TRUE.equals(active);
-    }
-}
-
-// APPLICATION: Caso de uso que usa la regla
-public class AuthenticateUserUseCase {
-    private void validateUserIsActive(User user) {
-        if (!user.isActive()) {
-            throw new IllegalStateException("Cuenta inactiva");
-        }
-    }
-}
-```
+---
 
 ## DTOs (Data Transfer Objects)
 
 ### Request DTOs
 
-DTOs que vienen del exterior (HTTP requests):
+Los Request DTOs representan los datos que vienen del cliente (HTTP requests). Incluyen validaciones con Jakarta Validation.
 
-```java
-public class RegisterUserRequest {
-    @NotBlank
-    @Email
-    private String email;
-    
-    @NotBlank
-    @Size(min = 8)
-    private String password;
-    // ...
-}
-```
+#### RegisterUserRequest
+- email: String (validación de formato email)
+- password: String (validación de fortaleza)
+- confirmPassword: String
+- firstName: String
+- lastName: String
 
-**Características:**
-- Validaciones con Jakarta Validation
-- No contienen lógica de negocio
-- Representan datos de entrada
+#### LoginRequest
+- email: String
+- password: String
+
+#### CreateAccountRequest
+- name: String
+- accountType: AccountType (SAVINGS, CHECKING, CASH)
+- initialBalance: BigDecimal (validación >= 0)
+- currency: String
+
+#### UpdateAccountRequest
+- name: String (opcional)
+- accountType: AccountType (opcional)
+- currency: String (opcional)
+
+#### CreateTransactionRequest
+- accountId: UUID
+- amount: BigDecimal (validación > 0)
+- transactionType: TransactionType (INCOME, EXPENSE)
+- description: String
+- transactionDate: LocalDate
+- tags: List<String> (opcional)
 
 ### Response DTOs
 
-DTOs que se envían al exterior (HTTP responses):
+Los Response DTOs representan los datos que se retornan al cliente. No contienen información sensible y están optimizados para la serialización JSON.
 
-```java
-public class UserResponse {
-    private UUID id;
-    private String email;
-    private String fullName;
-    // NO incluye password por seguridad
-}
-```
+#### AuthResponse
+- accessToken: String
+- refreshToken: String
+- tokenType: String
+- expiresIn: Long
+- user: UserResponse
 
-**Características:**
-- Solo datos necesarios para el cliente
-- No exponen información sensible
-- Formato optimizado para API
+#### UserResponse
+- id: UUID
+- email: String
+- firstName: String
+- lastName: String
+- fullName: String
+- membershipPlanId: UUID
+- createdAt: LocalDateTime
+- active: Boolean
 
-## Ventajas de esta Arquitectura
+#### AccountResponse
+- id: UUID
+- userId: UUID
+- name: String
+- accountType: AccountType
+- initialBalance: BigDecimal
+- currentBalance: BigDecimal
+- currency: String
+- createdAt: LocalDateTime
+- active: Boolean
 
-### 1. Testabilidad
+#### TransactionResponse
+- id: UUID
+- accountId: UUID
+- userId: UUID
+- amount: BigDecimal
+- transactionType: TransactionType
+- description: String
+- transactionDate: LocalDate
+- categoryId: UUID (opcional)
+- tags: List<String>
+- createdAt: LocalDateTime
+- updatedAt: LocalDateTime
 
-```java
-@Test
-void testRegisterUser() {
-    UserRepository mockRepo = mock(UserRepository.class);
-    RegisterUserUseCase useCase = new RegisterUserUseCase(mockRepo, ...);
-    
-    // Test puro del caso de uso
-    AuthResponse response = useCase.execute(request);
-    
-    // Assertions
-}
-```
+---
 
-### 2. Reutilización
+## Casos de Uso (Use Cases)
 
-Los casos de uso pueden ser reutilizados desde diferentes controladores o servicios.
+Los casos de uso encapsulan la lógica de aplicación. Cada caso de uso es independiente, transaccional y sigue el principio de responsabilidad única.
 
-### 3. Mantenibilidad
+### Casos de Uso de Usuario
 
-Cada caso de uso es independiente y fácil de modificar.
+#### RegisterUserUseCase
+Responsabilidad: Registrar un nuevo usuario en el sistema
+Flujo:
+1. Valida request (contraseñas coinciden, fortaleza)
+2. Verifica que email no exista
+3. Encripta contraseña con BCrypt
+4. Crea usuario en dominio
+5. Guarda usuario
+6. Asigna plan FREE por defecto
+7. Crea suscripción activa
+8. Genera token JWT
+9. Retorna AuthResponse
 
-### 4. Trazabilidad
+Dependencias:
+- UserRepository
+- MembershipPlanRepository
+- SubscriptionRepository
+- PasswordEncoder
+- GenerateTokenUseCase
+- ValidatePasswordStrengthUseCase
 
-Es fácil rastrear qué operaciones se realizan en cada caso de uso.
+#### AuthenticateUserUseCase
+Responsabilidad: Autenticar un usuario existente
+Flujo:
+1. Busca usuario por email
+2. Valida contraseña con BCrypt
+3. Verifica que usuario esté activo
+4. Genera token JWT
+5. Retorna AuthResponse
 
-## Reglas de Oro
+Dependencias:
+- UserRepository
+- PasswordEncoder
+- GenerateTokenUseCase
 
-### ✅ HACER
+#### GenerateTokenUseCase
+Responsabilidad: Generar tokens JWT (access y refresh)
+Flujo:
+1. Genera access token con expiración de 24 horas
+2. Genera refresh token con expiración de 7 días
+3. Retorna AuthResponse con ambos tokens
 
-1. **Un caso de uso por operación:** Cada operación tiene su propio caso de uso
-2. **Usar DTOs:** Siempre trabajar con DTOs en la interfaz pública
-3. **Transacciones en casos de uso:** Gestionar transacciones aquí
-4. **Validaciones de aplicación:** Validar reglas de aplicación aquí
-5. **Orquestar, no implementar:** Los casos de uso orquestan, no implementan
+Dependencias:
+- JwtTokenProvider
 
-### ❌ NO HACER
+#### ValidatePasswordStrengthUseCase
+Responsabilidad: Validar que una contraseña cumpla requisitos de seguridad
+Flujo:
+1. Valida mínimo 8 caracteres
+2. Valida al menos una mayúscula
+3. Valida al menos una minúscula
+4. Valida al menos un número
+5. Lanza excepción si no cumple
 
-1. **NO poner lógica de negocio:** Eso va en el dominio
-2. **NO exponer entidades de dominio:** Usar DTOs siempre
-3. **NO hacer consultas directas a BD:** Usar repositorios del dominio
-4. **NO mezclar responsabilidades:** Un caso de uso, una responsabilidad
-5. **NO depender de infraestructura directamente:** Usar abstracciones
+---
 
-## Próximos Casos de Uso a Implementar
+### Casos de Uso de Cuentas
 
-### Transacciones
-- CreateTransactionUseCase
-- GetTransactionsUseCase
-- UpdateTransactionUseCase
-- DeleteTransactionUseCase
+#### CreateAccountUseCase
+Responsabilidad: Crear una nueva cuenta bancaria para un usuario
+Flujo:
+1. Valida que usuario existe
+2. Valida límite de cuentas según plan de membresía
+3. Crea objeto Account en dominio
+4. Guarda cuenta
+5. Retorna AccountResponse
 
-### Cuentas
-- GetAccountsUseCase
-- UpdateAccountUseCase
-- DeleteAccountUseCase
+Dependencias:
+- AccountRepository
+- UserRepository
+- MembershipPlanRepository
+- SubscriptionRepository
 
-### Membresías
-- UpgradeMembershipUseCase
-- GetMembershipInfoUseCase
+#### GetAccountsUseCase
+Responsabilidad: Obtener todas las cuentas de un usuario
+Flujo:
+1. Busca todas las cuentas del usuario
+2. Retorna lista de AccountResponse
 
-### Reportes
-- GenerateMonthlyReportUseCase
-- GenerateTaxReportUseCase
-- ExportReportUseCase
+Dependencias:
+- AccountRepository
 
-## Conclusión
+#### GetAccountByIdUseCase
+Responsabilidad: Obtener una cuenta específica por ID
+Flujo:
+1. Busca cuenta por ID
+2. Valida que pertenezca al usuario
+3. Retorna AccountResponse
 
-La capa Application es el corazón de la orquestación en arquitectura hexagonal. Conecta la presentación con el dominio de forma limpia y mantenible, siguiendo principios SOLID y Clean Code.
+Dependencias:
+- AccountRepository
+
+#### UpdateAccountUseCase
+Responsabilidad: Actualizar datos de una cuenta existente
+Flujo:
+1. Busca cuenta por ID
+2. Valida que pertenezca al usuario
+3. Actualiza campos proporcionados
+4. Guarda cambios
+5. Retorna AccountResponse actualizado
+
+Dependencias:
+- AccountRepository
+
+#### DeleteAccountUseCase
+Responsabilidad: Eliminar una cuenta y sus transacciones asociadas
+Flujo:
+1. Busca cuenta por ID
+2. Valida que pertenezca al usuario
+3. Elimina todas las transacciones de la cuenta
+4. Elimina la cuenta
+5. Retorna sin contenido (204)
+
+Dependencias:
+- AccountRepository
+- TransactionRepository
+
+---
+
+### Casos de Uso de Transacciones
+
+#### CreateTransactionUseCase
+Responsabilidad: Crear una nueva transacción y actualizar saldo de cuenta
+Flujo:
+1. Valida que cuenta existe y pertenece al usuario
+2. Valida límite de transacciones mensuales
+3. Si es EXPENSE, valida que saldo sea suficiente
+4. Crea transacción en dominio
+5. Guarda transacción
+6. Actualiza saldo de cuenta (incrementa si INCOME, decrementa si EXPENSE)
+7. Retorna TransactionResponse
+
+Dependencias:
+- TransactionRepository
+- AccountRepository
+- ValidateTransactionLimitUseCase
+
+#### GetTransactionsUseCase
+Responsabilidad: Obtener transacciones de un usuario, opcionalmente filtradas por fecha
+Flujo:
+1. Busca todas las transacciones del usuario
+2. Si se proporcionan fechas, filtra por rango
+3. Ordena por fecha descendente
+4. Retorna lista de TransactionResponse
+
+Dependencias:
+- TransactionRepository
+
+#### ValidateTransactionLimitUseCase
+Responsabilidad: Validar que el usuario no exceda su límite mensual de transacciones
+Flujo:
+1. Obtiene plan de membresía del usuario
+2. Cuenta transacciones del mes actual
+3. Compara con límite del plan
+4. Lanza excepción si excede límite
+
+Dependencias:
+- TransactionRepository
+- SubscriptionRepository
+- MembershipPlanRepository
+
+---
+
+## Principios de Diseño Aplicados
+
+### Single Responsibility Principle (SRP)
+Cada caso de uso tiene una única responsabilidad bien definida.
+
+### Dependency Inversion Principle (DIP)
+Los casos de uso dependen de interfaces (repositorios del dominio), no de implementaciones concretas.
+
+### Transaction Management
+Los casos de uso están marcados con `@Transactional` para garantizar consistencia de datos.
+
+### Separation of Concerns
+- Los DTOs solo contienen datos, sin lógica
+- Los casos de uso orquestan, no implementan lógica de negocio
+- La lógica de negocio está en el dominio
+
+---
+
+## Flujo de Ejecución Típico
+
+1. Controller recibe HTTP request
+2. Controller valida Request DTO con `@Valid`
+3. Controller llama a UseCase.execute()
+4. UseCase:
+   - Valida reglas de aplicación
+   - Llama a repositorios del dominio (interfaces)
+   - Orquesta operaciones
+   - Convierte Domain objects a Response DTOs
+5. UseCase retorna Response DTO
+6. Controller retorna ResponseEntity con Response DTO
+
+---
+
+## Mapeo entre Capas
+
+La capa de aplicación es responsable del mapeo entre:
+- Request DTOs → Domain Objects (para operaciones de creación/actualización)
+- Domain Objects → Response DTOs (para operaciones de lectura)
+
+Actualmente se hace manualmente, pero se puede implementar MapStruct para automatizar este proceso.
+
 
