@@ -74,6 +74,8 @@ public class CategoryRepositoryAdapter implements CategoryRepository {
         entity.setType(category.getType());
         entity.setIsSystem(category.getIsSystem());
         entity.setParentCategoryId(category.getParentCategoryId());
+        entity.setIcon(category.getIcon());
+        entity.setColor(category.getColor());
         entity.setCreatedAt(category.getCreatedAt());
         entity.setUpdatedAt(category.getUpdatedAt());
         return entity;
@@ -88,6 +90,8 @@ public class CategoryRepositoryAdapter implements CategoryRepository {
                 entity.getType(),
                 entity.getIsSystem(),
                 entity.getParentCategoryId(),
+                entity.getIcon(),
+                entity.getColor(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );

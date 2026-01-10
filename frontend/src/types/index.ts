@@ -1,8 +1,12 @@
 export interface User {
   id: string;
   email: string;
-  name: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  membershipPlanId?: string;
   createdAt: string;
+  active: boolean;
 }
 
 export interface Account {
@@ -72,11 +76,38 @@ export interface LoginRequest {
 export interface RegisterRequest {
   email: string;
   password: string;
-  name: string;
+  confirmPassword: string;
+  firstName: string;
+  lastName: string;
 }
 
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
   user: User;
+}
+
+export interface Category {
+  id: string;
+  userId?: string;
+  name: string;
+  code?: string;
+  type: string; // 'INCOME' | 'EXPENSE'
+  isSystem: boolean;
+  parentCategoryId?: string;
+  icon?: string;
+  color?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateCategoryRequest {
+  name: string;
+  code?: string;
+  type: 'INCOME' | 'EXPENSE';
+  icon?: string;
+  color?: string;
 }
 

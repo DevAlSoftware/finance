@@ -7,7 +7,9 @@ import type {
   Account,
   Transaction,
   Transfer,
-  Dashboard
+  Dashboard,
+  Category,
+  CreateCategoryRequest
 } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8888/api';
@@ -36,6 +38,7 @@ class ApiService {
       (error: AxiosError) => {
         if (error.response?.status === 401) {
           localStorage.removeItem('token');
+          localStorage.removeItem('refreshToken');
           localStorage.removeItem('user');
           window.location.href = '/login';
         }
@@ -111,6 +114,24 @@ class ApiService {
   async getDashboard(): Promise<Dashboard> {
     const response = await this.client.get<Dashboard>('/dashboard');
     return response.data;
+  }
+
+  async getCategories(): Promise<Category[]> {
+    const response = await this.client.get<Category[]>('/categories');
+    return response.data;
+  }
+
+  async createCategory(data: CreateCategoryRequest): Promise<Category> {
+    const response = await this.client.post<Category>('/categories', {
+      ...data,
+      icon: data.icon || '📁',
+      color: data.color || '#6B7280',
+    });
+    return response.data;
+  }
+
+  async deleteCategory(id: string): Promise<void> {
+    await this.client.delete(`/categories/${id}`);
   }
 }
 

@@ -7,7 +7,8 @@ export const Register: React.FC = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -50,9 +51,11 @@ export const Register: React.FC = () => {
 
     try {
       await register({
-        name: formData.name,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         email: formData.email,
         password: formData.password,
+        confirmPassword: formData.confirmPassword,
       });
       navigate('/dashboard', { replace: true });
     } catch (error: any) {
@@ -82,16 +85,28 @@ export const Register: React.FC = () => {
               </div>
             )}
 
-            <Input
-              label="Nombre completo"
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              error={errors.name}
-              required
-              autoComplete="name"
-            />
+            <div className="grid grid-cols-2 gap-4">
+              <Input
+                label="Nombre"
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleChange}
+                error={errors.firstName}
+                required
+                autoComplete="given-name"
+              />
+              <Input
+                label="Apellido"
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleChange}
+                error={errors.lastName}
+                required
+                autoComplete="family-name"
+              />
+            </div>
 
             <Input
               label="Email"

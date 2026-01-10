@@ -1,14 +1,14 @@
-package com.devalFinance.domain.model;
+package com.devalFinance.application.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-public class Category {
+public class CategoryResponse {
     private UUID id;
     private UUID userId;
     private String name;
     private String code;
-    private TransactionType type;
+    private String type;
     private Boolean isSystem;
     private UUID parentCategoryId;
     private String icon;
@@ -16,20 +16,18 @@ public class Category {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public Category() {
-        this.isSystem = false;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+    public CategoryResponse() {
     }
 
-    public Category(UUID id, UUID userId, String name, String code, TransactionType type, Boolean isSystem,
-                    UUID parentCategoryId, String icon, String color, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public CategoryResponse(UUID id, UUID userId, String name, String code, String type,
+                           Boolean isSystem, UUID parentCategoryId, String icon, String color,
+                           LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.id = id;
         this.userId = userId;
         this.name = name;
         this.code = code;
         this.type = type;
-        this.isSystem = isSystem != null ? isSystem : false;
+        this.isSystem = isSystem;
         this.parentCategoryId = parentCategoryId;
         this.icon = icon;
         this.color = color;
@@ -69,11 +67,11 @@ public class Category {
         this.code = code;
     }
 
-    public TransactionType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(TransactionType type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -83,10 +81,6 @@ public class Category {
 
     public void setIsSystem(Boolean isSystem) {
         this.isSystem = isSystem;
-    }
-
-    public boolean isSystemCategory() {
-        return Boolean.TRUE.equals(isSystem);
     }
 
     public UUID getParentCategoryId() {
@@ -129,5 +123,4 @@ public class Category {
         this.color = color;
     }
 }
-
 

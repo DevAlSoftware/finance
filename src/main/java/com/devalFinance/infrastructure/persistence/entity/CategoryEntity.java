@@ -35,6 +35,12 @@ public class CategoryEntity {
     @Column(name = "parent_category_id")
     private UUID parentCategoryId;
 
+    @Column(length = 10)
+    private String icon;
+
+    @Column(length = 7)
+    private String color;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -125,6 +131,22 @@ public class CategoryEntity {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
     }
 }
 

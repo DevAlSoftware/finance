@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Button, Input, Card } from '../components';
+import { useLanguage } from '../hooks/useLanguage';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -33,7 +35,7 @@ export const Login: React.FC = () => {
       if (error.response?.data?.message) {
         setErrors({ general: error.response.data.message });
       } else {
-        setErrors({ general: 'Error al iniciar sesión. Intenta nuevamente.' });
+        setErrors({ general: t('auth.login.error') });
       }
     } finally {
       setIsLoading(false);
@@ -44,8 +46,8 @@ export const Login: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-spartan-50 via-white to-bronze-50 px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-crimson-700 to-bronze-600 mb-2">DevalFinance</h1>
-          <p className="text-spartan-700 font-medium">Inicia sesión en tu cuenta</p>
+          <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-crimson-700 to-bronze-600 mb-2">{t('common.appName')}</h1>
+          <p className="text-spartan-700 font-medium">{t('auth.login.title')}</p>
         </div>
 
         <Card>
@@ -57,7 +59,7 @@ export const Login: React.FC = () => {
             )}
 
             <Input
-              label="Email"
+              label={t('auth.login.email')}
               type="email"
               name="email"
               value={formData.email}
@@ -68,7 +70,7 @@ export const Login: React.FC = () => {
             />
 
             <Input
-              label="Contraseña"
+              label={t('auth.login.password')}
               type="password"
               name="password"
               value={formData.password}
@@ -85,19 +87,19 @@ export const Login: React.FC = () => {
               isLoading={isLoading}
               disabled={isLoading}
             >
-              Iniciar Sesión
+              {t('auth.login.loginButton')}
             </Button>
 
             <div className="text-center space-y-2">
               <div className="text-sm text-spartan-700">
-                ¿No tienes una cuenta?{' '}
+                {t('auth.login.noAccount')}{' '}
                 <Link to="/register" className="text-crimson-700 font-bold hover:text-crimson-800 hover:underline">
-                  Regístrate aquí
+                  {t('auth.login.registerLink')}
                 </Link>
               </div>
               <div className="text-sm">
                 <Link to="/" className="text-bronze-600 hover:text-bronze-700 font-medium">
-                  ← Volver al inicio
+                  {t('auth.login.backToHome')}
                 </Link>
               </div>
             </div>
